@@ -18,7 +18,7 @@ echo 'cc_wrapper="ccache"' >> out.gn/arm64.release.sample/args.gn
 
 # gn args out.gn/arm64.release.sample
 
-ninja -C out.gn/arm64.release.sample v8_monolith
+time ninja -C out.gn/arm64.release.sample v8_monolith
 
 cp out.gn/arm64.release.sample/obj/libv8_monolith.a ../../app3/v8/
 cp out.gn/arm64.release.sample/icudtl.dat ../../app3/v8/
