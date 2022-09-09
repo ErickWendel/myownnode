@@ -129,10 +129,13 @@ int runV8(int argc, char *argv[])
 
         {
             Local<String> source;
-            ReadFile(isolate, argv[1]).ToLocal(&source);
-            
+            ReadFile(isolate, argv[1])
+                .ToLocal(&source);
+
+            v8::ScriptOrigin origin(isolate, v8::String::NewFromUtf8(context->GetIsolate(), argv[1]).ToLocalChecked());
+
             Local<v8::Script> script =
-                v8::Script::Compile(context, source).ToLocalChecked();
+                v8::Script::Compile(context, source, &origin).ToLocalChecked();
 
             // Run the script to get the result.
             v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
