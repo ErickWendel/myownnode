@@ -30,49 +30,27 @@ const char *ToCString(const v8::String::Utf8Value &value)
     return *value ? *value : "<string conversion failed>";
 }
 
-// Executes a string within the current v8 context.
-// bool ExecuteString(v8::Isolate *isolate, v8::Local<v8::String> source,
-//                    v8::Local<v8::Value> name, bool print_result,
-//                    bool report_exceptions)
-// {
-//     v8::HandleScope handle_scope(isolate);
-//     v8::TryCatch try_catch(isolate);
-//     v8::ScriptOrigin origin(name);
-//     v8::Local<v8::Context> context(isolate->GetCurrentContext());
-//     v8::Local<v8::Script> script;
-//     if (!v8::Script::Compile(context, source, &origin).ToLocal(&script))
-//     {
-//         // Print errors that happened during compilation.
-//         // if (report_exceptions)
-//         //     ReportException(isolate, &try_catch);
-//         return false;
-//     }
-//     else
-//     {
-//         v8::Local<v8::Value> result;
-//         if (!script->Run(context).ToLocal(&result))
-//         {
-//             assert(try_catch.HasCaught());
-//             // Print errors that happened during execution.
-//             // if (report_exceptions)
-//             //     ReportException(isolate, &try_catch);
-//             return false;
-//         }
-//         else
-//         {
-//             assert(!try_catch.HasCaught());
-//             if (print_result && !result->IsUndefined())
-//             {
-//                 // If all went well and the result wasn't undefined then print
-//                 // the returned value.
-//                 v8::String::Utf8Value str(isolate, result);
-//                 const char *cstr = ToCString(str);
-//                 printf("%s\n", cstr);
-//             }
-//             return true;
-//         }
-//     }
-// }
+void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    bool first = true;
+    for (int i = 0; i < args.Length(); i++)
+    {
+        v8::HandleScope handle_scope(args.GetIsolate());
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            printf(" ");
+        }
+        v8::String::Utf8Value str(args.GetIsolate(), args[i]);
+        const char *cstr = ToCString(str);
+        printf("%s", cstr);
+    }
+    printf("\n");
+    fflush(stdout);
+}
 
 // Reads a file into a v8 string.
 MaybeLocal<String> ReadFile(Isolate *isolate, const char *name)
@@ -120,7 +98,6 @@ int runV8(int argc, char *argv[])
 
         // Create a stack-allocated handle scope.
         v8::HandleScope handle_scope(isolate);
-
         // Create a new context.
         Local<v8::Context> context = v8::Context::New(isolate);
 
@@ -128,6 +105,7 @@ int runV8(int argc, char *argv[])
         v8::Context::Scope context_scope(context);
 
         {
+
             Local<String> source;
             ReadFile(isolate, argv[1])
                 .ToLocal(&source);
