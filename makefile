@@ -1,4 +1,5 @@
 CXX = ccache g++
+OUTPUT_FILE=myownnode
 
 define INCLUDE
 	v8/include/
@@ -19,6 +20,8 @@ endef
 
 export INCLUDE
 export INCLUDEUV
+export OUTPUT_FILE
+
 export APP
 export LIB
 export OBJ
@@ -26,7 +29,7 @@ export APP
 
 
 build:
-	$(CXX) $$APP -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o myapp -DV8_COMPRESS_POINTERS $$OBJ 
+	$(CXX) $$APP -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o $$OUTPUT_FILE -DV8_COMPRESS_POINTERS $$OBJ 
     
 clean:
 		rm -f hello_uv

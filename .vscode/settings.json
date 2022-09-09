@@ -1,3 +1,10 @@
 {
-  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
+  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/Users/erickwendel/Downloads/projetos/myownnode/app3",
+      "binaryPath": "/Users/erickwendel/Downloads/projetos/myownnode/app3/myapp",
+      "binaryArgs": []
+    }
+  ]
 }
