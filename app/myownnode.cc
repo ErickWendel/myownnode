@@ -16,34 +16,89 @@
 #include "v8-primitive.h"
 #include "v8-script.h"
 
-#include "uv.h"
+#include "./myuv.h"
 
-int64_t counter = 0;
+using v8::Isolate;
+using v8::Local;
+using v8::MaybeLocal;
+using v8::NewStringType;
+using v8::String;
+using v8::V8;
 
-void idle_cb(uv_idle_t* handle) {
-  static int64_t count = -1;
-  count++;
-  if ((count % 10000) == 0) printf(".");
-  if (count >= 50000) uv_idle_stop(handle);
+const char *ToCString(const v8::String::Utf8Value &value)
+{
+    return *value ? *value : "<string conversion failed>";
 }
 
-int runUV() {
+// Executes a string within the current v8 context.
+// bool ExecuteString(v8::Isolate *isolate, v8::Local<v8::String> source,
+//                    v8::Local<v8::Value> name, bool print_result,
+//                    bool report_exceptions)
+// {
+//     v8::HandleScope handle_scope(isolate);
+//     v8::TryCatch try_catch(isolate);
+//     v8::ScriptOrigin origin(name);
+//     v8::Local<v8::Context> context(isolate->GetCurrentContext());
+//     v8::Local<v8::Script> script;
+//     if (!v8::Script::Compile(context, source, &origin).ToLocal(&script))
+//     {
+//         // Print errors that happened during compilation.
+//         // if (report_exceptions)
+//         //     ReportException(isolate, &try_catch);
+//         return false;
+//     }
+//     else
+//     {
+//         v8::Local<v8::Value> result;
+//         if (!script->Run(context).ToLocal(&result))
+//         {
+//             assert(try_catch.HasCaught());
+//             // Print errors that happened during execution.
+//             // if (report_exceptions)
+//             //     ReportException(isolate, &try_catch);
+//             return false;
+//         }
+//         else
+//         {
+//             assert(!try_catch.HasCaught());
+//             if (print_result && !result->IsUndefined())
+//             {
+//                 // If all went well and the result wasn't undefined then print
+//                 // the returned value.
+//                 v8::String::Utf8Value str(isolate, result);
+//                 const char *cstr = ToCString(str);
+//                 printf("%s\n", cstr);
+//             }
+//             return true;
+//         }
+//     }
+// }
 
-    uv_idle_t idle_handle;
-
-  /* 1. create the event loop */
-  uv_loop_t *loop = uv_default_loop();
-
-  /* 2. init an idle handler for the loop */
-  uv_idle_init(loop, &idle_handle);
-
-  /* 3. start the idle handler with a function to call */
-  uv_idle_start(&idle_handle, idle_cb);
-
-  /* 4. start the event loop */
-  uv_run(loop, UV_RUN_DEFAULT);
-
-  return 0;
+// Reads a file into a v8 string.
+MaybeLocal<String> ReadFile(Isolate *isolate, const char *name)
+{
+    FILE *file = fopen(name, "rb");
+    if (file == NULL)
+        return MaybeLocal<String>();
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    rewind(file);
+    char *chars = new char[size + 1];
+    chars[size] = '\0';
+    for (size_t i = 0; i < size;)
+    {
+        i += fread(&chars[i], 1, size - i, file);
+        if (ferror(file))
+        {
+            fclose(file);
+            return MaybeLocal<String>();
+        }
+    }
+    fclose(file);
+    MaybeLocal<String> result = String::NewFromUtf8(
+        isolate, chars, NewStringType::kNormal, static_cast<int>(size));
+    delete[] chars;
+    return result;
 }
 
 int runV8(int argc, char *argv[])
@@ -67,18 +122,16 @@ int runV8(int argc, char *argv[])
         v8::HandleScope handle_scope(isolate);
 
         // Create a new context.
-        v8::Local<v8::Context> context = v8::Context::New(isolate);
+        Local<v8::Context> context = v8::Context::New(isolate);
 
         // Enter the context for compiling and running the hello world script.
         v8::Context::Scope context_scope(context);
 
         {
-            // Create a string containing the JavaScript source code.
-            v8::Local<v8::String> source =
-                v8::String::NewFromUtf8Literal(isolate, "'Hello' + ', World!'");
-
-            // Compile the source code.
-            v8::Local<v8::Script> script =
+            Local<String> source;
+            ReadFile(isolate, argv[1]).ToLocal(&source);
+            
+            Local<v8::Script> script =
                 v8::Script::Compile(context, source).ToLocalChecked();
 
             // Run the script to get the result.
@@ -88,61 +141,21 @@ int runV8(int argc, char *argv[])
             v8::String::Utf8Value utf8(isolate, result);
             printf("%s\n", *utf8);
         }
-
-        {
-            // Use the JavaScript API to generate a WebAssembly module.
-            //
-            // |bytes| contains the binary format for the following module:
-            //
-            //     (func (export "add") (param i32 i32) (result i32)
-            //       get_local 0
-            //       get_local 1
-            //       i32.add)
-            //
-            const char csource[] = R"(
-        let bytes = new Uint8Array([
-          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x07, 0x01,
-          0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f, 0x03, 0x02, 0x01, 0x00, 0x07,
-          0x07, 0x01, 0x03, 0x61, 0x64, 0x64, 0x00, 0x00, 0x0a, 0x09, 0x01,
-          0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b
-        ]);
-        let module = new WebAssembly.Module(bytes);
-        let instance = new WebAssembly.Instance(module);
-        instance.exports.add(3, 4);
-      )";
-
-            // Create a string containing the JavaScript source code.
-            v8::Local<v8::String> source =
-                v8::String::NewFromUtf8Literal(isolate, csource);
-
-            // Compile the source code.
-            v8::Local<v8::Script> script =
-                v8::Script::Compile(context, source).ToLocalChecked();
-
-            // Run the script to get the result.
-            v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
-
-            // Convert the result to a uint32 and print it.
-            uint32_t number = result->Uint32Value(context).ToChecked();
-            printf("3 + 4 = %u\n", number);
-        }
     }
 
     // Dispose the isolate and tear down V8.
     isolate->Dispose();
     v8::V8::Dispose();
-    // v8::V8::DisposePlatform();
+    v8::V8::DisposePlatform();
     delete create_params.array_buffer_allocator;
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
+
     runV8(argc, argv);
     runUV();
 
     return 0;
 }
-
-
-

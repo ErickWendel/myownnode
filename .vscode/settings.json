@@ -6,5 +6,8 @@
       "binaryPath": "/Users/erickwendel/Downloads/projetos/myownnode/app3/myapp",
       "binaryArgs": []
     }
-  ]
+  ],
+  "files.associations": {
+    "filesystem": "cpp"
+  }
 }
