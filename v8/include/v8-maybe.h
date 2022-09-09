@@ -103,7 +103,6 @@ class Maybe {
   friend Maybe<U> Nothing();
   template <class U>
   friend Maybe<U> Just(const U& u);
-  
   template <class U, std::enable_if_t<!std::is_lvalue_reference_v<U>>*>
   friend Maybe<U> Just(U&& u);
 };
@@ -121,7 +120,6 @@ inline Maybe<T> Just(const T& t) {
 // Don't use forwarding references here but instead use two overloads.
 // Forwarding references only work when type deduction takes place, which is not
 // the case for callsites such as Just<Type>(t).
-
 template <class T, std::enable_if_t<!std::is_lvalue_reference_v<T>>* = nullptr>
 inline Maybe<T> Just(T&& t) {
   return Maybe<T>(std::move(t));
