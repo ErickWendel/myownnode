@@ -54,3 +54,6 @@ cmake \
   -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib 
 
 make -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc ..
+
+
+https://gist.github.com/tejom/d335a6ab1ac86b45f149e5c10e14b132 -> add console.log
