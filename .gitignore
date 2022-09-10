@@ -1,3 +1,4 @@
+*.dSYM/
 myapp
 myownnode
 v8/*.a
