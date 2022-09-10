@@ -1,35 +1,28 @@
 
 
-// Copyright 2015 the V8 project authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+#include <libplatform/libplatform.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "libplatform/libplatform.h"
 #include "v8-context.h"
+#include "v8-exception.h"
 #include "v8-initialization.h"
 #include "v8-isolate.h"
 #include "v8-local-handle.h"
-#include "v8-primitive.h"
 #include "v8-script.h"
-
+#include "v8-template.h"
 #include "./myuv.h"
 
-using v8::Isolate;
-using v8::Local;
-using v8::MaybeLocal;
-using v8::NewStringType;
-using v8::String;
-using v8::V8;
-
+// Extracts a C string from a V8 Utf8Value.
 const char *ToCString(const v8::String::Utf8Value &value)
 {
     return *value ? *value : "<string conversion failed>";
 }
 
+// The callback that is invoked by v8 whenever the JavaScript 'print'
+// function is called.  Prints its arguments on stdout separated by
+// spaces and ending with a newline.
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
     bool first = true;
@@ -52,15 +45,29 @@ void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
     fflush(stdout);
 }
 
+// Creates a new execution environment containing the built-in
+// functions.
+v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate)
+{
+    // Create a template for the global object.
+    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+    // Bind the global 'print' function to the C++ Print callback.
+    global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
+    // Bind the global 'read' function to the C++ Read callback.
+    return v8::Context::New(isolate, NULL, global);
+}
+
 // Reads a file into a v8 string.
-MaybeLocal<String> ReadFile(Isolate *isolate, const char *name)
+v8::MaybeLocal<v8::String> ReadFile(v8::Isolate *isolate, const char *name)
 {
     FILE *file = fopen(name, "rb");
     if (file == NULL)
-        return MaybeLocal<String>();
+        return v8::MaybeLocal<v8::String>();
+
     fseek(file, 0, SEEK_END);
     size_t size = ftell(file);
     rewind(file);
+
     char *chars = new char[size + 1];
     chars[size] = '\0';
     for (size_t i = 0; i < size;)
@@ -69,50 +76,49 @@ MaybeLocal<String> ReadFile(Isolate *isolate, const char *name)
         if (ferror(file))
         {
             fclose(file);
-            return MaybeLocal<String>();
+            return v8::MaybeLocal<v8::String>();
         }
     }
     fclose(file);
-    MaybeLocal<String> result = String::NewFromUtf8(
-        isolate, chars, NewStringType::kNormal, static_cast<int>(size));
+    v8::MaybeLocal<v8::String> result = v8::String::NewFromUtf8(
+        isolate, chars, v8::NewStringType::kNormal, static_cast<int>(size));
     delete[] chars;
     return result;
 }
 
-int runV8(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    // Initialize V8.
     v8::V8::InitializeICUDefaultLocation(argv[0]);
     v8::V8::InitializeExternalStartupData(argv[0]);
     std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
     v8::V8::InitializePlatform(platform.get());
     v8::V8::Initialize();
-
-    // Create a new Isolate and make it the current one.
+    v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
     v8::Isolate::CreateParams create_params;
     create_params.array_buffer_allocator =
         v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     v8::Isolate *isolate = v8::Isolate::New(create_params);
+
+    int result;
     {
         v8::Isolate::Scope isolate_scope(isolate);
-
-        // Create a stack-allocated handle scope.
         v8::HandleScope handle_scope(isolate);
-        // Create a new context.
-        Local<v8::Context> context = v8::Context::New(isolate);
-
-        // Enter the context for compiling and running the hello world script.
+        v8::Local<v8::Context> context = CreateShellContext(isolate);
+        if (context.IsEmpty())
+        {
+            fprintf(stderr, "Error creating context\n");
+            return 1;
+        }
         v8::Context::Scope context_scope(context);
-
         {
 
-            Local<String> source;
+            v8::Local<v8::String> source;
             ReadFile(isolate, argv[1])
                 .ToLocal(&source);
 
             v8::ScriptOrigin origin(isolate, v8::String::NewFromUtf8(context->GetIsolate(), argv[1]).ToLocalChecked());
 
-            Local<v8::Script> script =
+            v8::Local<v8::Script> script =
                 v8::Script::Compile(context, source, &origin).ToLocalChecked();
 
             // Run the script to get the result.
@@ -123,20 +129,11 @@ int runV8(int argc, char *argv[])
             printf("%s\n", *utf8);
         }
     }
-
-    // Dispose the isolate and tear down V8.
     isolate->Dispose();
     v8::V8::Dispose();
     v8::V8::DisposePlatform();
     delete create_params.array_buffer_allocator;
-    return 0;
-}
 
-int main(int argc, char *argv[])
-{
-
-    runV8(argc, argv);
     runUV();
-
-    return 0;
+    return result;
 }
