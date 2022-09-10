@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <uv.h>
 #include "v8-context.h"
 #include "v8-exception.h"
 #include "v8-initialization.h"
@@ -12,7 +13,7 @@
 #include "v8-local-handle.h"
 #include "v8-script.h"
 #include "v8-template.h"
-#include "./myuv.h"
+#include "./myuv.h" 
 
 // Extracts a C string from a V8 Utf8Value.
 const char *ToCString(const v8::String::Utf8Value &value)
@@ -23,8 +24,50 @@ const char *ToCString(const v8::String::Utf8Value &value)
 // The callback that is invoked by v8 whenever the JavaScript 'print'
 // function is called.  Prints its arguments on stdout separated by
 // spaces and ending with a newline.
+
+uv_timer_t gc_req;
+uv_timer_t fake_job_req;
+
+
+void gc(uv_timer_t *handle) {
+    fprintf(stderr, "Freeing unused objects\n");
+}
+
+void fake_job(uv_timer_t *handle) {
+    fprintf(stdout, "Fake job done\n");
+}
+
+void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    // args.GetReturnValue().Set(String::NewFromUtf8(
+    //   isolate, "world").ToLocalChecked());
+
+    
+    int64_t delay = args[0]->IntegerValue(args.GetIsolate()->GetCurrentContext()).ToChecked();
+    int64_t repeat = args[1]->IntegerValue(args.GetIsolate()->GetCurrentContext()).ToChecked();
+    v8::Local<v8::Value> arg = args[2];
+    if (!arg->IsFunction()) {
+        printf("callback not declared!");
+        
+        return;
+    }
+
+    printf("callback was declared!");
+    
+    uv_timer_init(uv_default_loop(), &gc_req);
+    uv_unref((uv_handle_t*) &gc_req);
+
+    uv_timer_start(&gc_req, gc, delay, repeat);
+
+
+    // could actually be a TCP download or something
+    uv_timer_init(uv_default_loop(), &fake_job_req);
+    uv_timer_start(&fake_job_req, fake_job, 9000, 0);
+}
+
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
+    
     bool first = true;
     for (int i = 0; i < args.Length(); i++)
     {
@@ -53,6 +96,8 @@ v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate)
     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
     // Bind the global 'print' function to the C++ Print callback.
     global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
+    global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, Timeout));
+
     // Bind the global 'read' function to the C++ Read callback.
     return v8::Context::New(isolate, NULL, global);
 }
@@ -129,6 +174,26 @@ int main(int argc, char *argv[])
             printf("%s\n", *utf8);
         }
     }
+
+    bool more;
+    uv_loop_t *loop = uv_default_loop();
+    do
+    {
+        v8::platform::PumpMessageLoop(platform.get(), isolate);
+        more = uv_run(loop, UV_RUN_DEFAULT);
+        if (more == false)
+        {
+            v8::platform::PumpMessageLoop(platform.get(), isolate);
+            more = uv_loop_alive(loop);
+            int isRun = uv_run(loop, UV_RUN_NOWAIT);
+            if (uv_run(loop, UV_RUN_NOWAIT) != 0)
+            {
+                more = true;
+            }
+        }
+
+    } while (more == true);
+
     isolate->Dispose();
     v8::V8::Dispose();
     v8::V8::DisposePlatform();
