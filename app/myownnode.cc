@@ -13,12 +13,22 @@
 #include "v8-local-handle.h"
 #include "v8-script.h"
 #include "v8-template.h"
-#include "./myuv.h" 
+#include "v8.h"
+
+#include "./myuv.h"
+using v8::Function;
+using v8::Handle;
 
 // Extracts a C string from a V8 Utf8Value.
 const char *ToCString(const v8::String::Utf8Value &value)
 {
     return *value ? *value : "<string conversion failed>";
+}
+
+static inline v8::Local<v8::String> v8_str(v8::Isolate *isolate,
+                                           const char *x)
+{
+    return v8::String::NewFromUtf8(isolate, x).ToLocalChecked();
 }
 
 // The callback that is invoked by v8 whenever the JavaScript 'print'
@@ -28,12 +38,13 @@ const char *ToCString(const v8::String::Utf8Value &value)
 uv_timer_t gc_req;
 uv_timer_t fake_job_req;
 
-
-void gc(uv_timer_t *handle) {
+void gc(uv_timer_t *handle)
+{
     fprintf(stderr, "Freeing unused objects\n");
 }
 
-void fake_job(uv_timer_t *handle) {
+void fake_job(uv_timer_t *handle)
+{
     fprintf(stdout, "Fake job done\n");
 }
 
@@ -41,24 +52,37 @@ void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
     // args.GetReturnValue().Set(String::NewFromUtf8(
     //   isolate, "world").ToLocalChecked());
+    auto isolate = args.GetIsolate();
 
-    
-    int64_t delay = args[0]->IntegerValue(args.GetIsolate()->GetCurrentContext()).ToChecked();
-    int64_t repeat = args[1]->IntegerValue(args.GetIsolate()->GetCurrentContext()).ToChecked();
-    v8::Local<v8::Value> arg = args[2];
-    if (!arg->IsFunction()) {
+    auto context = args.GetIsolate()->GetCurrentContext();
+    int64_t delay = args[0]->IntegerValue(context).ToChecked();
+    int64_t repeat = args[1]->IntegerValue(context).ToChecked();
+    v8::Local<v8::Value> callback = args[2];
+
+    if (!callback->IsFunction())
+    {
         printf("callback not declared!");
-        
+
         return;
     }
 
-    printf("callback was declared!");
+    v8::Local<v8::Function> function = args[2].As<v8::Function>();
+    v8::Local<v8::Value> result;
     
+    v8::Handle<v8::Value> resultr[] = { v8::Undefined(isolate), v8_str(isolate, "hello world")};
+
+
+    if (function
+            ->Call(isolate->GetCurrentContext(), v8::Undefined(isolate), 2, resultr)
+            .ToLocal(&result))
+    {
+        args.GetReturnValue().Set(result);
+    }
+
     uv_timer_init(uv_default_loop(), &gc_req);
-    uv_unref((uv_handle_t*) &gc_req);
+    uv_unref((uv_handle_t *)&gc_req);
 
     uv_timer_start(&gc_req, gc, delay, repeat);
-
 
     // could actually be a TCP download or something
     uv_timer_init(uv_default_loop(), &fake_job_req);
@@ -67,7 +91,7 @@ void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
 
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
-    
+
     bool first = true;
     for (int i = 0; i < args.Length(); i++)
     {

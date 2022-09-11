@@ -1,6 +1,7 @@
 // print('printing.. Hey dude!')
-timeout(100, 1000, (err, res) => {
-  print (err);
-  print (res);
+const result = timeout(100, 0, (err, res) => {
+  print (`error: ${err}`);
+  print (`res ${res}`);
+  1 +1
 });
-1 + 1
+print(`result: ${result}`)
