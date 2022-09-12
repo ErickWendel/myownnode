@@ -76,7 +76,6 @@ void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
     if (!callback->IsFunction())
     {
         printf("callback not declared!");
-
         return;
     }
 
