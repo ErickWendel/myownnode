@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 #include <uv.h>
 #include "v8-context.h"
@@ -15,46 +16,65 @@
 #include "v8-template.h"
 #include "v8.h"
 
-#include "./myuv.h"
-using v8::Function;
-using v8::Handle;
-
 // Extracts a C string from a V8 Utf8Value.
 const char *ToCString(const v8::String::Utf8Value &value)
 {
     return *value ? *value : "<string conversion failed>";
 }
 
-static inline v8::Local<v8::String> v8_str(v8::Isolate *isolate,
-                                           const char *x)
+static inline v8::Local<v8::String> v8_str(const char *x)
 {
-    return v8::String::NewFromUtf8(isolate, x).ToLocalChecked();
+    return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), x).ToLocalChecked();
 }
 
 // The callback that is invoked by v8 whenever the JavaScript 'print'
 // function is called.  Prints its arguments on stdout separated by
 // spaces and ending with a newline.
 
+struct timer
+{
+    uv_timer_t req;
+    v8::Isolate *isolate;
+    v8::FunctionCallbackInfo<v8::Value> pargs;
+};
+
 uv_timer_t gc_req;
 uv_timer_t fake_job_req;
+uv_loop_t *loop = uv_default_loop();
 
-void gc(uv_timer_t *handle)
+void OnTimerCb(uv_timer_t *handle)
 {
-    fprintf(stderr, "Freeing unused objects\n");
-}
+    timer *timerWrap = (timer *)handle->data;
 
-void fake_job(uv_timer_t *handle)
-{
-    fprintf(stdout, "Fake job done\n");
+    v8::Isolate *isolate = timerWrap->isolate;
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+    // if (isolate->IsDead())
+    // {
+    //     printf("isolate is dead\n");
+    // }
+
+    v8::Local<v8::Value> result;
+    v8::Handle<v8::Value> resultr[] = {v8::Undefined(isolate), v8_str("hello world")};
+    v8::Local<v8::Function> callback = timerWrap->pargs[2].As<v8::Function>();
+    if (callback->Call(
+                    context,
+                    v8::Undefined(isolate),
+                    2,
+                    resultr)
+            .ToLocal(&result))
+    {
+        timerWrap->pargs.GetReturnValue().Set(result);
+    }
+
+    fprintf(stdout, "done!\n");
 }
 
 void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
-    // args.GetReturnValue().Set(String::NewFromUtf8(
-    //   isolate, "world").ToLocalChecked());
     auto isolate = args.GetIsolate();
 
-    auto context = args.GetIsolate()->GetCurrentContext();
+    auto context = isolate->GetCurrentContext();
     int64_t delay = args[0]->IntegerValue(context).ToChecked();
     int64_t repeat = args[1]->IntegerValue(context).ToChecked();
     v8::Local<v8::Value> callback = args[2];
@@ -66,27 +86,14 @@ void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
         return;
     }
 
-    v8::Local<v8::Function> function = args[2].As<v8::Function>();
-    v8::Local<v8::Value> result;
-    
-    v8::Handle<v8::Value> resultr[] = { v8::Undefined(isolate), v8_str(isolate, "hello world")};
+    timer *timerWrap = (timer *)malloc(sizeof(timer));
 
+    timerWrap->isolate = args.GetIsolate();
+    timerWrap->pargs = args;
+    timerWrap->req.data = (void *)timerWrap;
 
-    if (function
-            ->Call(isolate->GetCurrentContext(), v8::Undefined(isolate), 2, resultr)
-            .ToLocal(&result))
-    {
-        args.GetReturnValue().Set(result);
-    }
-
-    uv_timer_init(uv_default_loop(), &gc_req);
-    uv_unref((uv_handle_t *)&gc_req);
-
-    uv_timer_start(&gc_req, gc, delay, repeat);
-
-    // could actually be a TCP download or something
-    uv_timer_init(uv_default_loop(), &fake_job_req);
-    uv_timer_start(&fake_job_req, fake_job, 9000, 0);
+    uv_timer_init(loop, &timerWrap->req);
+    uv_timer_start(&timerWrap->req, OnTimerCb, delay, repeat);
 }
 
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
@@ -114,7 +121,7 @@ void Print(const v8::FunctionCallbackInfo<v8::Value> &args)
 
 // Creates a new execution environment containing the built-in
 // functions.
-v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate)
+v8::Local<v8::Context> BindFunctionsAndCreateContext(v8::Isolate *isolate)
 {
     // Create a template for the global object.
     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
@@ -157,6 +164,8 @@ v8::MaybeLocal<v8::String> ReadFile(v8::Isolate *isolate, const char *name)
 
 int main(int argc, char *argv[])
 {
+    loop = uv_default_loop();
+
     v8::V8::InitializeICUDefaultLocation(argv[0]);
     v8::V8::InitializeExternalStartupData(argv[0]);
     std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
@@ -172,7 +181,7 @@ int main(int argc, char *argv[])
     {
         v8::Isolate::Scope isolate_scope(isolate);
         v8::HandleScope handle_scope(isolate);
-        v8::Local<v8::Context> context = CreateShellContext(isolate);
+        v8::Local<v8::Context> context = BindFunctionsAndCreateContext(isolate);
         if (context.IsEmpty())
         {
             fprintf(stderr, "Error creating context\n");
@@ -182,8 +191,11 @@ int main(int argc, char *argv[])
         {
 
             v8::Local<v8::String> source;
-            ReadFile(isolate, argv[1])
-                .ToLocal(&source);
+            if (!ReadFile(isolate, argv[1]).ToLocal(&source))
+            {
+                fprintf(stderr, "Error reading file\n");
+                return 1;
+            }
 
             v8::ScriptOrigin origin(isolate, v8::String::NewFromUtf8(context->GetIsolate(), argv[1]).ToLocalChecked());
 
@@ -196,33 +208,31 @@ int main(int argc, char *argv[])
             // Convert the result to an UTF8 string and print it.
             v8::String::Utf8Value utf8(isolate, result);
             printf("%s\n", *utf8);
+
+            bool more;
+            do
+            {
+                v8::platform::PumpMessageLoop(platform.get(), isolate);
+                more = uv_run(loop, UV_RUN_DEFAULT);
+                if (more == false)
+                {
+                    v8::platform::PumpMessageLoop(platform.get(), isolate);
+                    more = uv_loop_alive(loop);
+                    int isRun = uv_run(loop, UV_RUN_NOWAIT);
+                    if (uv_run(loop, UV_RUN_NOWAIT) != 0)
+                    {
+                        more = true;
+                    }
+                }
+
+            } while (more == true);
         }
     }
-
-    bool more;
-    uv_loop_t *loop = uv_default_loop();
-    do
-    {
-        v8::platform::PumpMessageLoop(platform.get(), isolate);
-        more = uv_run(loop, UV_RUN_DEFAULT);
-        if (more == false)
-        {
-            v8::platform::PumpMessageLoop(platform.get(), isolate);
-            more = uv_loop_alive(loop);
-            int isRun = uv_run(loop, UV_RUN_NOWAIT);
-            if (uv_run(loop, UV_RUN_NOWAIT) != 0)
-            {
-                more = true;
-            }
-        }
-
-    } while (more == true);
 
     isolate->Dispose();
     v8::V8::Dispose();
     v8::V8::DisposePlatform();
     delete create_params.array_buffer_allocator;
 
-    runUV();
     return result;
 }
