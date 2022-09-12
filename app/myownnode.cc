@@ -27,9 +27,6 @@ static inline v8::Local<v8::String> v8_str(const char *x)
     return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), x).ToLocalChecked();
 }
 
-// The callback that is invoked by v8 whenever the JavaScript 'print'
-// function is called.  Prints its arguments on stdout separated by
-// spaces and ending with a newline.
 
 struct timer
 {
@@ -38,8 +35,6 @@ struct timer
     v8::FunctionCallbackInfo<v8::Value> pargs;
 };
 
-uv_timer_t gc_req;
-uv_timer_t fake_job_req;
 uv_loop_t *loop = uv_default_loop();
 
 void OnTimerCb(uv_timer_t *handle)
@@ -49,10 +44,11 @@ void OnTimerCb(uv_timer_t *handle)
     v8::Isolate *isolate = timerWrap->isolate;
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-    // if (isolate->IsDead())
-    // {
-    //     printf("isolate is dead\n");
-    // }
+    if (isolate->IsDead())
+    {
+        printf("isolate is dead\n");
+        return;
+    }
 
     v8::Local<v8::Value> result;
     v8::Handle<v8::Value> resultr[] = {v8::Undefined(isolate), v8_str("hello world")};
@@ -66,8 +62,6 @@ void OnTimerCb(uv_timer_t *handle)
     {
         timerWrap->pargs.GetReturnValue().Set(result);
     }
-
-    fprintf(stdout, "done!\n");
 }
 
 void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
