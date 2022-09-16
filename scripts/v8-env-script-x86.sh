@@ -1,5 +1,6 @@
 sudo apt-get install -y ccache
 sudo apt-get install -y cmake
+npm i -g nodemon
 
 ccache --version 
 # ccache version 4.6.3
