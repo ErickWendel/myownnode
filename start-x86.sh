@@ -1,0 +1,1 @@
+nodemon -e cc,h --exec "make -f makefile-x86 && ./myownnode index.js"
