@@ -3,8 +3,8 @@
 # and commit this file to your remote git repository to share the goodness with others.
 
 tasks:
-  - init: install make
-    command: sudo apt-get install -y ccache && npm i -g nodemon
+  - init: initialize
+    command: sudo apt-get install -y ccache && npm i -g nodemon && ./start-x86.sh
 
 
 
