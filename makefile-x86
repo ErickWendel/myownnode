@@ -10,12 +10,12 @@ define INCLUDEUV
 endef
 
 define APP
-	app/hello-uv-timers.cpp
+	app/myownnode.cc
 endef
  
 define OBJ
 	v8/libv8_monolith.a
-	libuv/libuv.a
+	libuv/libuv-x86_64-gitpod.a
 endef
 
 export INCLUDE
