@@ -32,7 +32,7 @@ struct timer
 {
     uv_timer_t req;
     v8::Isolate *isolate;
-    v8::FunctionCallbackInfo<v8::Value> pargs;
+    v8::Global<v8::Function> cb;
 };
 
 uv_loop_t *loop = uv_default_loop();
@@ -52,7 +52,8 @@ void OnTimerCb(uv_timer_t *handle)
 
     v8::Local<v8::Value> result;
     v8::Handle<v8::Value> resultr[] = {v8::Undefined(isolate), v8_str("hello world")};
-    v8::Local<v8::Function> callback = timerWrap->pargs[2].As<v8::Function>();
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(isolate, timerWrap->cb);
+
     if (callback->Call(
                     context,
                     v8::Undefined(isolate),
@@ -60,7 +61,10 @@ void OnTimerCb(uv_timer_t *handle)
                     resultr)
             .ToLocal(&result))
     {
-        timerWrap->pargs.GetReturnValue().Set(result);
+        // Ok, the callback succeded
+    }
+    else {
+        // some exception happened
     }
 }
 
@@ -79,10 +83,10 @@ void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
         return;
     }
 
-    timer *timerWrap = (timer *)malloc(sizeof(timer));
+    timer *timerWrap = new timer();
 
-    timerWrap->isolate = args.GetIsolate();
-    timerWrap->pargs = args;
+    timerWrap->isolate = isolate;
+    timerWrap->cb.Reset(isolate, callback.As<v8::Function>());
     timerWrap->req.data = (void *)timerWrap;
 
     uv_timer_init(loop, &timerWrap->req);
@@ -200,7 +204,8 @@ int main(int argc, char *argv[])
 
             // Convert the result to an UTF8 string and print it.
             v8::String::Utf8Value utf8(isolate, result);
-            printf("%s\n", *utf8);
+            // printf("%s\n", *utf8);
+            fprintf(stderr, "result %s\n", *utf8);
 
             bool more;
             do

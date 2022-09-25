@@ -11,8 +11,6 @@ print('printing.. 4Hey dude!')
 //   print('ae', i);
 // }
 
-print(new Date().toISOString(), 'ran');
-
 timeout(100, 0, function () {
   print('1 ' + new Date().toISOString());
   timeout(2000, 0, function () {
@@ -26,3 +24,6 @@ timeout(100, 0, function () {
     });
   });
 });
+
+timeout(100, 0, () => print('in parallel'))
+timeout(0, 1000, () => print('interval at', Date.now()))
