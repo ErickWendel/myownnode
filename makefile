@@ -10,7 +10,7 @@ define INCLUDEUV
 endef
 
 define APP
-	app/myownnode.cc
+	app/index.cc
 endef
  
 define OBJ

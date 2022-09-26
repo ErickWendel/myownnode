@@ -17,81 +17,10 @@
 #include "v8.h"
 
 #include "./fs.hpp"
+#include "./util.hpp"
+#include "./timer.hpp"
 
 uv_loop_t *DEFAULT_LOOP = uv_default_loop();
-
-struct timer
-{
-    uv_timer_t req;
-    v8::Isolate *isolate;
-    v8::Global<v8::Function> cb;
-};
-
-static inline v8::Local<v8::String> v8_str(const char *x)
-{
-    return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), x).ToLocalChecked();
-}
-
-class Timer
-{
-public:
-    static void OnTimerCb(uv_timer_t *handle)
-    {
-        timer *timerWrap = (timer *)handle->data;
-
-        v8::Isolate *isolate = timerWrap->isolate;
-        v8::Local<v8::Context> context = isolate->GetCurrentContext();
-
-        if (isolate->IsDead())
-        {
-            printf("isolate is dead\n");
-            return;
-        }
-
-        v8::Local<v8::Value> result;
-        v8::Handle<v8::Value> resultr[] = {v8::Undefined(isolate), v8_str("hello world")};
-        v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(isolate, timerWrap->cb);
-
-        if (callback->Call(
-                        context,
-                        v8::Undefined(isolate),
-                        2,
-                        resultr)
-                .ToLocal(&result))
-        {
-            // Ok, the callback succeded
-        }
-        else
-        {
-            // some exception happened
-        }
-    }
-
-    static void Timeout(const v8::FunctionCallbackInfo<v8::Value> &args)
-    {
-        auto isolate = args.GetIsolate();
-
-        auto context = isolate->GetCurrentContext();
-        int64_t delay = args[0]->IntegerValue(context).ToChecked();
-        int64_t repeat = args[1]->IntegerValue(context).ToChecked();
-        v8::Local<v8::Value> callback = args[2];
-
-        if (!callback->IsFunction())
-        {
-            printf("callback not declared!");
-            return;
-        }
-
-        timer *timerWrap = new timer();
-
-        timerWrap->isolate = isolate;
-        timerWrap->cb.Reset(isolate, callback.As<v8::Function>());
-        timerWrap->req.data = (void *)timerWrap;
-
-        uv_timer_init(DEFAULT_LOOP, &timerWrap->req);
-        uv_timer_start(&timerWrap->req, OnTimerCb, delay, repeat);
-    }
-};
 
 class MyOwnNode
 {
@@ -209,9 +138,11 @@ public:
         // Create a template for the global object.
         v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
         // Bind the global 'print' function to the C++ Print callback.
-        global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
+        Timer t;
+        t.Initialize(DEFAULT_LOOP);
 
-        global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, Timer::Timeout));
+        global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
+        global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, t.Timeout));
 
         // Create a new context.
         this->context = v8::Context::New(this->isolate, NULL, global);
@@ -232,17 +163,3 @@ public:
         delete this->create_params.array_buffer_allocator;
     }
 };
-
-int main(int argc, char *argv[])
-{
-    char *filename = argv[1];
-    MyOwnNode *myOwnNode = new MyOwnNode();
-    std::unique_ptr<v8::Platform> platform =
-        myOwnNode->initializeV8(argc, argv);
-
-    myOwnNode->initializeVM();
-    myOwnNode->InitializeProgram(filename);
-    myOwnNode->Shutdown();
-
-    return 0;
-}
