@@ -3,27 +3,22 @@ print('printing.. 2Hey dude!')
 print('printing.. 3Hey dude!')
 print('printing.. 4Hey dude!')
 
-// const setTimeout = (cb, ms) => timeout(ms, 10, cb);
-// const interval = (cb, ms) => timeout(10, ms, cb);
+const setTimeout = (ms, cb) => timeout(ms, 0, cb);
+const setInterval = (ms, cb) => timeout(0, ms, cb);
 
-
-// for(let i=0; i< 10; i++) {
-//   print('ae', i);
-// }
-
-timeout(100, 0, function () {
+setTimeout(100, () => {
   print('1 ' + new Date().toISOString());
-  timeout(2000, 0, function () {
-    
-    print('2 ' + new Date().toISOString());
-  
-    timeout(2000, 0, function () {
-      
-      print('3 ' + new Date().toISOString());
-    
-    });
-  });
-});
 
-timeout(100, 0, () => print('in parallel'))
-timeout(0, 1000, () => print('interval at', Date.now()))
+  setTimeout(200, () => {
+    print('2 ' + new Date().toISOString());
+    setTimeout(200, () => print('3 ' + new Date().toISOString()));
+  });
+
+});
+const map = new Map([
+  ['name', 'erick']
+])
+print([...map.values()].map(i => i.toUpperCase()))
+
+setInterval(500, () => print('in parallel', new Date().toISOString()))
+setTimeout(1000, () => print('after all', new Date().toISOString()))
