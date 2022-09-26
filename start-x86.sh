@@ -10,4 +10,4 @@ then
 fi
 
 
-nodemon -e cc,h,js,cpp --exec "make -f makefile-x86 && ./myownnode index.js"
+nodemon -e cc,h,js,cpp,hpp --exec "make -f makefile-x86 && ./myownnode index.js"

@@ -1,5 +1,9 @@
-#include "./myownnode.hpp"
+#include <libplatform/libplatform.h>
+#include <uv.h> 
 #include "v8.h"
+
+#include "./src/myownnode.hpp"
+
 
 int main(int argc, char *argv[])
 {
