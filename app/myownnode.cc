@@ -16,7 +16,7 @@
 #include "v8-template.h"
 #include "v8.h"
 
-#include "./fs.h"
+#include "./fs.hpp"
 
 uv_loop_t *DEFAULT_LOOP = uv_default_loop();
 
