@@ -1,3 +1,5 @@
+#include "v8.h"
+
 class Fs
 {
 public:

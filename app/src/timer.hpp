@@ -1,3 +1,6 @@
+#include <uv.h> 
+#include "v8.h"
+
 struct timer
 {
   uv_timer_t req;
