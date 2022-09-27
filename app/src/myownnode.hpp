@@ -14,23 +14,9 @@ private:
 
     void WaitForEvents()
     {
-        bool more;
-        do
-        {
-            v8::platform::PumpMessageLoop(this->platform->get(), this->isolate);
-            more = uv_run(DEFAULT_LOOP, UV_RUN_DEFAULT);
-            if (more == false)
-            {
-                v8::platform::PumpMessageLoop(this->platform->get(), this->isolate);
-                more = uv_loop_alive(DEFAULT_LOOP);
-                int isRun = uv_run(DEFAULT_LOOP, UV_RUN_NOWAIT);
-                if (uv_run(DEFAULT_LOOP, UV_RUN_NOWAIT) != 0)
-                {
-                    more = true;
-                }
-            }
-
-        } while (more == true);
+        // https://groups.google.com/g/v8-users/c/xaSx3ATgFbg
+        // while(v8::platform::PumpMessageLoop(this->platform->get(), this->isolate)){}
+        uv_run(DEFAULT_LOOP, UV_RUN_DEFAULT);
     }
 
     void ExecuteScriptAndWaitForEvents(char *filename)
