@@ -18,7 +18,7 @@
         "${workspaceFolder}/myownnode",
         "-DV8_COMPRESS_POINTERS",
         "${workspaceFolder}/v8/libv8_monolith.a",
-        "${workspaceFolder}/libuv/libuv_a.a"
+        "${workspaceFolder}/libuv/libuv_a-macm1.a"
       ],
       "options": {
         "cwd": "${fileDirname}"
