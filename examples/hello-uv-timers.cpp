@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
 
 #include <uv.h>
 
@@ -6,24 +10,44 @@ uv_loop_t *loop;
 uv_timer_t gc_req;
 uv_timer_t fake_job_req;
 
-void gc(uv_timer_t *handle) {
-    fprintf(stderr, "Freeing unused objects\n");
+void callbackFn()
+{
+    printf("callback executed!\n");
 }
 
-void fake_job(uv_timer_t *handle) {
-    fprintf(stdout, "Fake job done\n");
+typedef void (*functionTemplate)(void);
+
+struct timer
+{
+    uv_timer_t req;
+    std::string text;
+    functionTemplate *callback;
+};
+
+void work(uv_timer_t *handle)
+{
+    timer *timerWrap = (timer *)handle->data;
+
+    ((functionTemplate)timerWrap->callback)();
+
+    printf("%s", timerWrap->text.c_str());
 }
 
-int main() {
+int main()
+{
     loop = uv_default_loop();
+    for (size_t i = 0; i < 10; i++)
+    {
+        timer *timerWrap = new timer();
+        timerWrap->callback = (functionTemplate *)callbackFn;
+        timerWrap->text = "hello\n";
 
-    uv_timer_init(loop, &gc_req);
-    uv_unref((uv_handle_t*) &gc_req);
+        timerWrap->req.data = (void *)timerWrap;
 
-    uv_timer_start(&gc_req, gc, 0, 2000);
+        // could actually be a TCP download or something
+        uv_timer_init(loop, &timerWrap->req);
+        uv_timer_start(&timerWrap->req, work, 500 + i, 0);
+    }
 
-    // could actually be a TCP download or something
-    uv_timer_init(loop, &fake_job_req);
-    uv_timer_start(&fake_job_req, fake_job, 9000, 0);
     return uv_run(loop, UV_RUN_DEFAULT);
 }
