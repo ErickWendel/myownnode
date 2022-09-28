@@ -80,12 +80,9 @@ private:
 public:
     std::unique_ptr<v8::Platform> initializeV8(int argc, char *argv[])
     {
-        v8::V8::InitializeICUDefaultLocation(argv[0]);
-        v8::V8::InitializeExternalStartupData(argv[0]);
         std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
         v8::V8::InitializePlatform(platform.get());
         v8::V8::Initialize();
-        // v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
 
         this->platform = &platform;
         return platform;
@@ -103,6 +100,7 @@ public:
 
     void InitializeProgram(char *filename)
     {
+        v8::Locker locker(this->isolate);
         v8::Isolate::Scope isolate_scope(this->isolate);
 
         // Create a stack-allocated handle scope.
