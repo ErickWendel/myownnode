@@ -77,8 +77,8 @@ class Db {
 
 // Promise.all(promises).then(_ => print('results', _))
 
-// thread((message) => {
-//   let count = 0;
-//   for (let i = message.from; i < message.to; i++) { count ++ }
-//   print('finished!');
-// })
+thread((message) => {
+  let count = 0;
+  for (let i = 0; i < 1e5; i++) { count ++ }
+  print(`finished running ${count} items`);
+})
