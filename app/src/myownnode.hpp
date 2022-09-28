@@ -100,7 +100,6 @@ public:
 
     void InitializeProgram(char *filename)
     {
-        v8::Locker locker(this->isolate);
         v8::Isolate::Scope isolate_scope(this->isolate);
 
         // Create a stack-allocated handle scope.

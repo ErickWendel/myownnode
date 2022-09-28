@@ -47,11 +47,15 @@ class Db {
   }
   async findAll() {
     await setTimeoutAsync(200);
-    return [...this.db.values()].map(({ name, age }) => `name: ${name}, age: ${age}`)
+    return [...this.db.values()].map(({
+      name,
+      age
+    }) => `name: ${name}, age: ${age}`)
   }
 }
 
-;(async function asyncFn() {
+;
+(async function asyncFn() {
 
   const db = new Db()
   await db.insert({
@@ -77,8 +81,9 @@ class Db {
 
 // Promise.all(promises).then(_ => print('results', _))
 
-thread((message) => {
+thread(function (err, res) {
   let count = 0;
-  for (let i = 0; i < 1e5; i++) { count ++ }
-  print(`finished running ${count} items`);
+  // for (let i = 0; i < 1e3; i++) { count++  }
+
+  print(`finished running ${count}`);
 })
