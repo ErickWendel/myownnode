@@ -108,11 +108,11 @@ public:
         // Create a template for the global object.
         v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
         // Bind the global 'print' function to the C++ Print callback.
-        Timer t;
-        t.Initialize(DEFAULT_LOOP);
+        Timer timer;
+        timer.Initialize(DEFAULT_LOOP);
 
         global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
-        global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, t.Timeout));
+        global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, timer.Timeout));
         global->Set(isolate, "thread", v8::FunctionTemplate::New(isolate, MyThread::Thread));
 
         // Create a new context.
