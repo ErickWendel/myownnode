@@ -46,7 +46,9 @@ int main()
 
         // could actually be a TCP download or something
         uv_timer_init(loop, &timerWrap->req);
-        uv_timer_start(&timerWrap->req, work, 500 + i, 0);
+        int delay = 500 + i;
+        int interval = 0;
+        uv_timer_start(&timerWrap->req, work, delay, interval);
     }
 
     return uv_run(loop, UV_RUN_DEFAULT);
