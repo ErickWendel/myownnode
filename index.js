@@ -6,15 +6,6 @@ print('printing.. Hey dude!')
 const setTimeout = (ms, cb) => timeout(ms, 0, cb);
 const setInterval = (ms, cb) => timeout(0, ms, cb);
 const setTimeoutAsync = (ms) => new Promise(resolve => setTimeout(ms, resolve))
-// setTimeout(100, () => {
-//   print('1 ' + new Date().toISOString());
-
-//   setTimeout(200, () => {
-//     print('2 ' + new Date().toISOString());
-//     setTimeout(200, () => print('3 ' + new Date().toISOString()));
-//   });
-
-// });
 
 ;
 (async function asyncFn() {
