@@ -81,9 +81,4 @@ class Db {
 
 // Promise.all(promises).then(_ => print('results', _))
 
-thread(function (err, res) {
-  let count = 0;
-  // for (let i = 0; i < 1e3; i++) { count++  }
-
-  print(`finished running ${count}`);
-})
+thread(10);
