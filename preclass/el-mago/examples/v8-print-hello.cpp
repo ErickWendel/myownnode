@@ -68,10 +68,10 @@ int main(int argc, char *argv[])
 
     // Create a stack-allocated handle scope.
     v8::HandleScope handle_scope(isolate);
-    
+
     // Create a new context.
     v8::Local<v8::Context> context = CreateContext(isolate);
-    
+
     // Enter the context for compiling and running the hello world script.
     v8::Context::Scope context_scope(context);
 

@@ -11,7 +11,7 @@ void dowork(void *arg) {
         fprintf(stderr, "another step\n");
     }
     fprintf(stderr, "done running!\n");
-} 
+}
 
 int main() {
     int counter = 10;

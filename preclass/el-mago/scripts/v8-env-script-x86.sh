@@ -2,7 +2,7 @@ sudo apt-get install -y ccache
 sudo apt-get install -y cmake
 npm i -g nodemon
 
-ccache --version 
+ccache --version
 # ccache version 4.6.3
 
 ccache g++ --version
@@ -33,8 +33,8 @@ tools/dev/v8gen.py list
 
 tools/dev/v8gen.py x64.release.sample
 
-# echo 'v8_target_cpu = "arm64"' >> out.gn/x64.release.sample/args.gn 
-echo 'cc_wrapper="ccache"' >> out.gn/x64.release.sample/args.gn 
+# echo 'v8_target_cpu = "arm64"' >> out.gn/x64.release.sample/args.gn
+echo 'cc_wrapper="ccache"' >> out.gn/x64.release.sample/args.gn
 sed -ie '/v8_enable_sandbox/d' out.gn/x64.release.sample/args.gn
 
 export CCACHE_CPP2=yes

@@ -1,4 +1,4 @@
-ccache --version 
+ccache --version
 # ccache version 4.6.3
 
 ccache g++ --version
@@ -26,8 +26,8 @@ cd v8
 git checkout 4ec5bb4f26
 
 tools/dev/v8gen.py arm64.release.sample
-echo 'v8_target_cpu = "arm64"' >> out.gn/arm64.release.sample/args.gn 
-echo 'cc_wrapper="ccache"' >> out.gn/arm64.release.sample/args.gn 
+echo 'v8_target_cpu = "arm64"' >> out.gn/arm64.release.sample/args.gn
+echo 'cc_wrapper="ccache"' >> out.gn/arm64.release.sample/args.gn
 sed -ie '/v8_enable_sandbox/d' out.gn/arm64.release.sample/args.gn
 
 export CCACHE_CPP2=yes

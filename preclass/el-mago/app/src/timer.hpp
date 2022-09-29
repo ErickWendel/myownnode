@@ -1,4 +1,4 @@
-#include <uv.h> 
+#include <uv.h>
 #include "v8.h"
 
 struct timer

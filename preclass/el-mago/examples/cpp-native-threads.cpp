@@ -10,9 +10,9 @@ void task1(string msg)
     cout << "task1 says: " << msg;
     for (size_t i = 0; i < 1000; i++)
     {
-      
+
     }
-    
+
 }
 
 int main()
