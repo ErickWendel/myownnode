@@ -1,1 +1,0 @@
-nodemon -e cc,h,js,cpp,hpp --exec "make && ./myownnode index.js"
