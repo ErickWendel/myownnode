@@ -9,7 +9,7 @@
 
 uv_loop_t *DEFAULT_LOOP = uv_default_loop();
 
-class MyOwnNode
+class Capivara
 {
 private:
     v8::Isolate *isolate;

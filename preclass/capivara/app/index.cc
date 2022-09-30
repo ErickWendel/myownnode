@@ -2,19 +2,19 @@
 #include <uv.h>
 #include "v8.h"
 
-#include "./src/myownnode.hpp"
+#include "./src/capivara.hpp"
 
 
 int main(int argc, char *argv[])
 {
     char *filename = argv[1];
-    MyOwnNode *myOwnNode = new MyOwnNode();
+    auto *capivara = new Capivara();
     std::unique_ptr<v8::Platform> platform =
-        myOwnNode->initializeV8(argc, argv);
+        capivara->initializeV8(argc, argv);
 
-    myOwnNode->initializeVM();
-    myOwnNode->InitializeProgram(filename);
-    myOwnNode->Shutdown();
+    capivara->initializeVM();
+    capivara->InitializeProgram(filename);
+    capivara->Shutdown();
 
     return 0;
 }
