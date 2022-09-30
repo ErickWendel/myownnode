@@ -1,6 +1,7 @@
-# Capivara - Creating your own JavaScript runtime tutorial
-
-Capivara is a JavaScript runtime built on top of [V8 Javascript Engine](https://github.com/v8/v8) and [Libuv](https://github.com/libuv/libuv) 
+# CapivaraBR - Creating your own JavaScript runtime tutorial
+![capivara logo](./capivara.jpeg)
+## Overview
+CapivaraBR is a JavaScript runtime built on top of [V8 Javascript Engine](https://github.com/v8/v8) and [Libuv](https://github.com/libuv/libuv) 
 
 - [Gitpod snapshot](https://gitpod.io#snapshot/7c9bbcdb-47e9-4597-8345-066ae4d36fd6)
 
@@ -16,7 +17,7 @@ Capivara is a JavaScript runtime built on top of [V8 Javascript Engine](https://
     - It works similarly to how `Node.js` works. By running `capivara index.js` it will read the JavaScript content from the file and use `V8` to interpret it nd `libuv` to wait for async events.
 
 - Project uses `V8 v10.7.0`
-- Project uses `Libu v1.x`
+- Project uses `Libuv v1.x`
 
 - All other dependencies are listed on [scripts](./scripts) folder.
 
