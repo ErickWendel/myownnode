@@ -1,13 +1,24 @@
-# Creating your own JavaScript runtime tutorial
+# Capivara - Creating your own JavaScript runtime tutorial
 
-- [Gitpod snapshot](https://gitpod.io#snapshot/c39ad9cc-4a4c-4dc4-8d9c-2e027f0ec376)
+Capivara is a JavaScript runtime built on top of [V8 Javascript Engine](https://github.com/v8/v8) and [Libuv](https://github.com/libuv/libuv) 
+
+- [Gitpod snapshot](https://gitpod.io#snapshot/df662415-2459-4157-a23b-a6de1c462e14)
 
 ## Running
 
-- In the GitPod env you can run the hello world example by running the executable [./start.sh](./start.sh) script. 
+- In the GitPod env you can run the hello world example by running the executable [./start.sh](./capivara/start.sh) script. 
 
-It'll download and install `nodemon` (for hot reload) and `ccache` for cpp code caching.
+### Notes
 
+- It comes with `live reload` enabled for C++ and JS files using `nodemon`
+- It comes with a simple `Print` function, a custom C++ function used as a `console.log` function
+- The [./start.sh](./capivara/start.sh) script generates a `binary` called `capivara`. 
+    - It works similarly to how `Node.js` works. By running `capivara index.js` it will read the JavaScript content from the file and use `V8` to interpret it nd `libuv` to wait for async events.
+
+- Project uses `V8 v10.7.0`
+- Project uses `Libu v1.x`
+
+- All other dependencies are listed on [scripts](./scripts) folder.
 
 ## Examples
 
