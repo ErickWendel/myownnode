@@ -10,4 +10,4 @@ then
 fi
 
 
-nodemon -e cc,h,js,cpp,hpp --exec "make && ./myownnode index.js"
+nodemon -e cc,h,js,cpp,hpp --exec "make && ./capivara index.js"

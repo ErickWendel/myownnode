@@ -1,5 +1,5 @@
 CXX = ccache g++
-OUTPUT_FILE=myownnode
+OUTPUT_FILE=capivara
 
 define INCLUDE
 	v8/include/
