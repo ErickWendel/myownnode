@@ -1,6 +1,6 @@
 # Capivara.js - Creating your own JavaScript runtime tutorial
 
-![](./capivara-js.jpeg)
+![capivara logo](./capivara.png)
 ## Overview
 
 Capivara is a JavaScript runtime built on top of [V8 Javascript Engine](https://github.com/v8/v8) and [Libuv](https://github.com/libuv/libuv) 
