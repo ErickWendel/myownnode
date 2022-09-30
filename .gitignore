@@ -2,7 +2,7 @@
 lib/
 myapp
 capivara/capivara
-*.a
+libv8_monolith.a
 # Logs
 logs
 *.log
