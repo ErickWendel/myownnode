@@ -1,8 +1,8 @@
 *.dSYM/
 lib/
 myapp
-myownnode
-v8/*.a
+capivara/capivara
+*.a
 # Logs
 logs
 *.log
