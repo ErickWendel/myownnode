@@ -3,7 +3,8 @@
 ## Overview
 CapivaraBR is a JavaScript runtime built on top of [V8 Javascript Engine](https://github.com/v8/v8) and [Libuv](https://github.com/libuv/libuv) 
 
-- [Gitpod snapshot](https://gitpod.io#snapshot/31118e9f-dbb0-4174-9a9b-e36432657bae)
+- Use the environment to follow the tutorial on a [Gitpod snapshot](https://gitpod.io#snapshot/f5d65d51-37d6-457f-9606-6db394eba60a)
+
 
 ## Running
 
