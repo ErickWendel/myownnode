@@ -15,7 +15,7 @@
         "-g",
         "-pthread",
         "-o",
-        "bin/${workspaceFolder}/capivara",
+        "${workspaceFolder}/bin/capivara",
         "-DV8_COMPRESS_POINTERS",
         "${workspaceFolder}/v8/libv8_monolith.a",
         "${workspaceFolder}/libuv/libuv_a-macm1.a"
