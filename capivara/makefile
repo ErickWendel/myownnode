@@ -1,5 +1,5 @@
 CXX = ccache g++
-OUTPUT_FILE=myownnode
+OUTPUT_FILE=bin/capivara
 
 define INCLUDE
 	v8/include/
@@ -27,10 +27,21 @@ export LIB
 export OBJ
 export APP
 
+examples=\
+  cpp-native-threads\
+  uv-threads\
+  uv-timers\
+  v8-print-hello
 
+# will output the exectuable to ./bin folder
 build:
+	mkdir -p bin
 	$(CXX) $$APP -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o $$OUTPUT_FILE -DV8_COMPRESS_POINTERS $$OBJ -Wl,--no-as-needed -ldl
-    
+
+# make uv-threads (or any from examples)
+$(examples): % : examples/%.cpp
+	mkdir -p bin
+	$(CXX) -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o bin/$@  $< -DV8_COMPRESS_POINTERS $$OBJ -Wl,--no-as-needed -ldl
+	./bin/$@
 clean:
-		rm -f hello_uv
-		rm -f myapp
+	rm -rf bin

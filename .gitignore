@@ -2,7 +2,7 @@
 lib/
 myapp
 myownnode
-v8/*.a
+**/v8/*.a
 # Logs
 logs
 *.log

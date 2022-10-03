@@ -1,0 +1,1 @@
+nodemon -e cc,h,js,cpp,hpp --exec "make -f makefile-m1 && ./bin/capivara index.js"

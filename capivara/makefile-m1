@@ -1,5 +1,5 @@
 CXX = ccache g++
-OUTPUT_FILE=myownnode
+OUTPUT_FILE=bin/capivara
 
 define INCLUDE
 	v8/include/
@@ -29,8 +29,12 @@ export APP
 
 
 build:
+	mkdir -p bin
 	$(CXX) $$APP -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o $$OUTPUT_FILE -DV8_COMPRESS_POINTERS $$OBJ 
-    
+
+$(examples): % : examples/%.cpp
+	mkdir -p bin
+	$(CXX) $$APP -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o -o bin/$@  $<  -DV8_COMPRESS_POINTERS $$OBJ 
+
 clean:
-		rm -f hello_uv
-		rm -f myapp
+	rm -rf bin
