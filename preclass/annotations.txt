@@ -98,6 +98,19 @@ Script:
     - show that setTimeout and setInterval don't exist
 
 - creating timer.hpp
+  on index.js 
+      interval = 0
+      sleep = 100
+      timeout(sleep, interval, () => {
+        print('1 ' + new Date().toISOString());
+      });
+      
+      interval = 200
+      sleep = 100
+      timeout(sleep, interval, () => {
+        print('1 ' + new Date().toISOString());
+      });
+
   show examples/uv-timers needs a event loop
   show WaitForEvents
   touch timer.hpp
@@ -107,11 +120,38 @@ Script:
   Timeout
     all until callback->IsFunction
     print delay, repeat and callback
+      printf("delay %lld, repeat %lld\n", delay, repeat);
+      v8::String::Utf8Value str(isolate, args[2]);
+      printf("%s\n", *str);
+  capivara 
+    InitializeProgram
+      add timer initialization
 
+  ->  show callbacks being passed as params
 
+  OnTimerCb
+    all 
+  Timeout
+    initialize uv timers 
+  
+  -> setTimeout should work now
+  index.js 
+    const setTimeout = (ms, cb) => timeout(ms, 0, cb);
+    const setInterval = (ms, cb) => timeout(0, ms, cb);
+    const setTimeoutAsync = (ms) => new Promise(resolve => setTimeout(ms, resolve))
+
+    ;(async function asyncFn() {
+      print(new Date().toISOString(), 'waiting a sec...')
+      await setTimeoutAsync(1000)
+      print(new Date().toISOString(), 'waiting a sec...')
+      await setTimeoutAsync(1000)
+      print(new Date().toISOString(), 'finished at')
+    })()
 
 - all threads work in Node.js - Worker Threads
   - thread all
 
+  capivara 
+    add thread binding
 
 Conclusions
