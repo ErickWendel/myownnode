@@ -42,5 +42,6 @@ build:
 $(examples): % : examples/%.cpp
 	mkdir -p bin
 	$(CXX) -I $$INCLUDE -I $$INCLUDEUV  -std=c++17 -pthread -o bin/$@  $< -DV8_COMPRESS_POINTERS $$OBJ -Wl,--no-as-needed -ldl
+	./bin/$@
 clean:
 	rm -rf bin
