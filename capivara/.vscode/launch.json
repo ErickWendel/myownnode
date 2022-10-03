@@ -7,7 +7,7 @@
     "type": "lldb",
     "request": "launch",
     "name": "Debug",
-    "program": "${workspaceFolder}/myownnode",
+    "program": "${workspaceFolder}/capivara",
     "args": ["index.js"],
     "cwd": "${workspaceFolder}",
     "preLaunchTask": "build"
