@@ -25,7 +25,17 @@ CapivaraBR is a JavaScript runtime built on top of [V8 Javascript Engine](https:
 
 - I left some examples on [examples](./examples/) folder in case you wanna check out how to create [uv timers](./examples/uv-timers.cpp), [uv threads](./examples/uv-threads.cpp), [native cpp threads](./examples/cpp-native-threads.cpp) or the [v8 custom print function](./examples/v8-print-hello.cpp).
 
-## if you wanna compile binaries it by yourself (NOT RECOMMENDED!)
+### Running the examples
+- You can compile and execute examples by simply executing 
+```sh
+make example-without-extension
+```
+For example executing the [v8-print-hello](./examples/v8-print-hello.cpp):
+```sh
+make v8-print-hello.cpp
+# Hello, World!...
+```
+## if you wanna compile binaries it by yourself
 
 I left some scripts in case you wanna compile all binaries by yourself
 
