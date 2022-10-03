@@ -65,3 +65,53 @@ gcc -v -E -x c++ -
 https://github.com/huruji/v8-with-libuv/tree/main/src
 
 Working snap: https://gitpod.io#snapshot/6a277626-548d-4a6b-a1fc-73eb2f14de5c
+
+
+--
+Script:
+- Let's get started then
+- I'll be using the gitpod with you
+- First go to the GitHub repo, leave a star and open it on your browser
+- Login in with your GitHub profile
+- run ./start.sh
+- make
+- ./capivara index.js
+
+- Steps we'll do now
+  - checkout all examples so you can run each example independently
+  - I've prepared a template to focus only what's relevant for this demo but I'll walk you throughout the whole thing
+  - the template now is read as a JS file and interpret it on V8
+  - setting up libuv listening for events
+  - You'll:
+    - implement our own console.log
+    - implement our own setTimeout and setInterval
+    - spin up a thread and execute some code
+    - create a complex js file using promises, timers, and more to check if our own nodejs is working
+
+
+- Show all examples
+- Show scripts in case you wanna compile yourself
+
+- Template:
+  - V8 with hello world working (print) and read file and UV
+    - index.js with only print
+    - show that setTimeout and setInterval don't exist
+
+- creating timer.hpp
+  show examples/uv-timers needs a event loop
+  show WaitForEvents
+  touch timer.hpp
+
+  Initialize
+    all
+  Timeout
+    all until callback->IsFunction
+    print delay, repeat and callback
+
+
+
+- all threads work in Node.js - Worker Threads
+  - thread all
+
+
+Conclusions
