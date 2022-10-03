@@ -3,9 +3,6 @@ print('printing.. Hey dude!')
 // print('printing.. 3Hey dude!')
 // print('printing.. 4Hey dude!')
 
-const setTimeout = (ms, cb) => timeout(ms, 0, cb);
-const setInterval = (ms, cb) => timeout(0, ms, cb);
-const setTimeoutAsync = (ms) => new Promise(resolve => setTimeout(ms, resolve))
 // setTimeout(100, () => {
 //   print('1 ' + new Date().toISOString());
 
@@ -15,6 +12,10 @@ const setTimeoutAsync = (ms) => new Promise(resolve => setTimeout(ms, resolve))
 //   });
 
 // });
+
+const setTimeout = (ms, cb) => timeout(ms, 0, cb);
+const setInterval = (ms, cb) => timeout(0, ms, cb);
+const setTimeoutAsync = (ms) => new Promise(resolve => setTimeout(ms, resolve))
 
 ;
 (async function asyncFn() {
