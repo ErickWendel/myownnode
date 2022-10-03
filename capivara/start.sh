@@ -10,4 +10,4 @@ then
 fi
 
 
-nodemon -e cc,h,js,cpp,hpp --exec "make && ./capivara index.js"
+nodemon -e cc,h,js,cpp,hpp --exec "make && ./bin/capivara index.js"

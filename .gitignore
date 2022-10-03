@@ -1,4 +1,5 @@
 *.dSYM/
+bin/
 lib/
 myapp
 capivara/capivara
