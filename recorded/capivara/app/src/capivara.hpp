@@ -4,6 +4,8 @@
 
 #include "./fs.hpp"
 #include "./util.hpp"
+#include "./timer.hpp"
+#include "./thread.hpp"
 
 uv_loop_t *DEFAULT_LOOP = uv_default_loop();
 
@@ -106,6 +108,12 @@ public:
 
         // Bind the global 'print' function to the C++ Print callback.
         global->Set(isolate, "print", v8::FunctionTemplate::New(isolate, Print));
+        Timer timer;
+        timer.Initialize(DEFAULT_LOOP);
+
+        global->Set(isolate, "timeout", v8::FunctionTemplate::New(isolate, timer.Timeout));
+
+        global->Set(isolate, "thread", v8::FunctionTemplate::New(isolate, MyThread::Thread));
 
         // Create a new context.
         this->context = v8::Context::New(this->isolate, NULL, global);
