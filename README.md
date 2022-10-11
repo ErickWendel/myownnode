@@ -7,7 +7,7 @@ CapivaraBR is a JavaScript runtime built on top of [V8 Javascript Engine](https:
 - Use the environment to follow the tutorial on a [Gitpod snapshot](https://gitpod.io#snapshot/448f92e9-efaf-4356-805e-6215c87b76c2)
 
 ## About
-Welcome, this repo is part of my youtube video about Recreating the Node.js project from Scratch using V8, Libuv and C++
+Welcome, this repo is part of my youtube video about [Recreating the Node.js project from Scratch using V8, Libuv and C++](https://youtu.be/ynNDmp7hBdo)
 
 First of all, leave your star 🌟 on this repo.
 
