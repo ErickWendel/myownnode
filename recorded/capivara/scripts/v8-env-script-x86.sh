@@ -1,5 +1,6 @@
 sudo apt-get install -y ccache
 sudo apt-get install -y cmake
+sudo apt-get install -y pkg-config
 
 ccache --version 
 # ccache version 4.6.3
@@ -12,6 +13,9 @@ ccache g++ --version
 
 cmake --version
 # cmake version 3.24.1
+
+pkg-config --version
+# 0.29.2
 
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 export PATH=`pwd`/depot_tools:$PATH
